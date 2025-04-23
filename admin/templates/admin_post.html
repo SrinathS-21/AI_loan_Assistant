@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Create Articles{% endblock %}
+
+{% block content %}
+    <div class="flex justify-center">
+        <div class="w-full max-w-2xl">
+            <div class="card bg-white shadow-lg rounded-lg p-6">
+                <h2 class="card-title text-2xl font-bold text-center text-blue-600 mb-6">Create and Post Article</h2>
+                <form method="post" action="{{ url_for('post_article') }}" class="space-y-6" id="post-form">
+                    <div class="flex space-x-4">
+                        <button type="button" class="btn btn-secondary bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition duration-200" id="generate-post">Generate Post</button>
+                        <button type="submit" class="btn btn-success bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200" id="post-button" style="display: none;">Post Article</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="mb-4">
+                            <label for="heading" class="block text-sm font-medium text-gray-700">Heading</label>
+                            <input type="text" id="heading" name="heading" class="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="{{ generated_heading or '' }}" readonly>
+                        </div>
+                        <div class="mb-4">
+                            <label for="author" class="block text-sm font-medium text-gray-700">Author</label>
+                            <input type="text" id="author" name="author" class="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" value="{{ generated_author or '' }}" readonly>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="article" class="block text-sm font-medium text-gray-700">Article</label>
+                        <textarea id="article" name="article" class="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-48 resize-none" readonly>{{ generated_article or '' }}</textarea>
+                    </div>
+                    {% if article_message %}
+                        <p class="text-center text-sm {{ 'text-green-600' if article_success else 'text-red-600' }} mb-4">{{ article_message }}</p>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('generate-post').addEventListener('click', function() {
+            fetch('/generate_post', { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('heading').value = data.heading;
+                        document.getElementById('author').value = data.author;
+                        document.getElementById('article').value = data.article;
+                        document.getElementById('post-button').style.display = 'inline-block';
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => alert('Error generating post: ' + error));
+        });
+    </script>
+{% endblock %}

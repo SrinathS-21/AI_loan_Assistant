@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Upload PDFs{% endblock %}
+
+{% block content %}
+    <div class="flex justify-center">
+        <div class="w-full max-w-lg">
+            <div class="card bg-white shadow-lg rounded-lg p-6">
+                <h2 class="card-title text-2xl font-bold text-center text-blue-600 mb-6">Upload Bank Loan PDFs</h2>
+                <form method="post" action="{{ url_for('upload_pdf') }}" enctype="multipart/form-data" class="space-y-6" id="upload-form">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Select PDF File:</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:bg-gray-50 transition duration-200">
+                            <input type="file" id="pdf_file" name="pdf_file" accept=".pdf" class="form-control w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                            <p class="text-gray-500 mt-2">Drag and drop a PDF file here or click to browse.</p>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="collection_name" class="block text-sm font-medium text-gray-700">Select Collection:</label>
+                        <select id="collection_name" name="collection_name" class="form-select w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="Admin">Admin</option>
+                            <option value="Books_data">Books_data</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200">Upload</button>
+                </form>
+                {% if message %}
+                    <p class="mt-4 text-center text-sm {{ 'text-green-600' if success else 'text-red-600' }}">{{ message }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

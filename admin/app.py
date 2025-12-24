@@ -213,7 +213,7 @@ def generate_post_from_books_data():
 
 # Initialize SQLite database
 def init_db():
-    conn = sqlite3.connect('D:/pythonProject1/admins.db')
+    conn = sqlite3.connect('admins.db')  # Changed to use a local path
     cursor = conn.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS admins (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -344,7 +344,7 @@ def admin_signup():
 
         try:
             # Store in SQLite
-            conn = sqlite3.connect('D:/pythonProject1/admins.db')
+            conn = sqlite3.connect('admins.db')  # Changed to use a local path
             cursor = conn.cursor()
             cursor.execute('INSERT INTO admins (email, password) VALUES (?, ?)', (email, hashed_password))
             conn.commit()
@@ -372,7 +372,7 @@ def admin_login():
         password = request.form['password']
 
         # Check credentials
-        conn = sqlite3.connect('D:/pythonProject1/admins.db')
+        conn = sqlite3.connect('admins.db')  # Changed to use a local path
         cursor = conn.cursor()
         cursor.execute('SELECT password FROM admins WHERE email = ?', (email,))
         result = cursor.fetchone()

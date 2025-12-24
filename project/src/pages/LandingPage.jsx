@@ -68,139 +68,147 @@ function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <div className="bg-white">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">
+      <nav className="bg-white/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="text-2xl font-semibold text-cyan-500">
+          <div className="text-3xl font-bold bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">
             Loan Advisor
           </div>
-          <div className="flex items-center gap-4">
-            <button className="btn btn-ghost text-gray-600 hover:text-gray-900 flex items-center gap-2">
-              <Globe size={20} />
+          <div className="flex items-center gap-6">
+            <button className="btn btn-ghost text-gray-600 hover:text-gray-900 flex items-center gap-2 transition-colors duration-200">
+              <Globe className="text-cyan-500" size={20} />
               English
             </button>
             <button
-              className="btn bg-cyan-500 text-white border-none hover:bg-cyan-600 rounded-full px-6"
+              className="btn bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-none hover:shadow-lg hover:opacity-90 rounded-full px-8 py-2 transition-all duration-200 transform hover:scale-105"
               onClick={handleGetStarted}
             >
               Get Started
             </button>
             <button
-              className="text-gray-600 hover:text-cyan-500 transition"
+              className="text-gray-600 hover:text-cyan-500 transition-colors duration-200 p-2 hover:bg-gray-100 rounded-full"
               onClick={handleLogout}
             >
               <UserCircle size={28} />
             </button>
           </div>
         </div>
-      </div>
+      </nav>
 
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="container max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+      <div className="flex-1 flex items-center justify-center p-6 animate-fade-in-up">
+        <div className="container max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16 space-y-6">
+            <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600 mb-6 leading-tight animate-fade-in-down">
               Your AI-Powered Loan Assistant
             </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed animate-fade-in-up">
               Simplify your financial journey with personalized loan advice, eligibility checks, and multilingual support.
             </p>
+            <div className="mt-8 flex justify-center gap-4">
+              <button onClick={handleGetStarted} className="px-8 py-3 text-lg font-semibold text-white bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                Get Started Now
+              </button>
+              <button onClick={() => navigate('/community')} className="px-8 py-3 text-lg font-semibold text-gray-700 bg-white border-2 border-gray-200 rounded-full hover:border-cyan-500 hover:text-cyan-600 transform hover:scale-105 transition-all duration-200">
+                Join Community
+              </button>
+            </div>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-8 justify-center">
-            <div className="bg-gray-50 rounded-xl shadow-lg flex-1 p-6 border-2 border-gray-200 hover:bg-cyan-50 hover:border-cyan-500 transition-all duration-300">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto px-4">
+            <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl hover:shadow-2xl flex-1 p-8 border border-gray-100/20 group hover:-translate-y-1 transition-all duration-300">
               <div className="text-center">
-                <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MessageCircle size={24} className="text-cyan-500" />
+                <div className="w-16 h-16 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6 transform rotate-3 hover:rotate-6 transition-transform duration-300">
+                  <MessageCircle size={32} className="text-cyan-500" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Chat with Advisor</h3>
+                <h3 className="text-xl font-bold text-gray-800 group-hover:text-cyan-600 transition-colors duration-200">Chat with Advisor</h3>
                 <button
-                  className="btn bg-cyan-500 text-white border-none hover:bg-cyan-600 rounded-full px-6 mb-6"
+                  className="btn bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-none hover:shadow-lg hover:opacity-90 rounded-full px-8 py-3 mb-8 transition-all duration-200 transform hover:scale-105 w-full"
                   onClick={handleGetStarted}
                 >
                   Start Chat
                 </button>
-                <div className="text-left space-y-3">
-                  <p className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                    Talk in your native language
+                <div className="text-left space-y-4">
+                  <p className="flex items-center gap-3 text-sm text-gray-600 hover:text-cyan-600 transition-all duration-200 p-2 rounded-lg hover:bg-cyan-50 cursor-pointer group">
+                    <span className="w-3 h-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full group-hover:scale-125 transition-transform duration-200"></span>
+                    <span className="group-hover:translate-x-1 transition-transform duration-200">Talk in your native language</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                    Get loan eligibility checks
+                  <p className="flex items-center gap-3 text-sm text-gray-600 hover:text-cyan-600 transition-all duration-200 p-2 rounded-lg hover:bg-cyan-50 cursor-pointer group">
+                    <span className="w-3 h-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full group-hover:scale-125 transition-transform duration-200"></span>
+                    <span className="group-hover:translate-x-1 transition-transform duration-200">Get loan eligibility checks</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                    Receive financial tips
+                  <p className="flex items-center gap-3 text-sm text-gray-600 hover:text-cyan-600 transition-all duration-200 p-2 rounded-lg hover:bg-cyan-50 cursor-pointer group">
+                    <span className="w-3 h-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full group-hover:scale-125 transition-transform duration-200"></span>
+                    <span className="group-hover:translate-x-1 transition-transform duration-200">Receive financial tips</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                    Voice or text interaction
+                  <p className="flex items-center gap-3 text-sm text-gray-600 hover:text-cyan-600 transition-all duration-200 p-2 rounded-lg hover:bg-cyan-50 cursor-pointer group">
+                    <span className="w-3 h-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full group-hover:scale-125 transition-transform duration-200"></span>
+                    <span className="group-hover:translate-x-1 transition-transform duration-200">Voice or text interaction</span>
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-xl shadow-lg flex-1 p-6 border-2 border-gray-200 hover:bg-cyan-50 hover:border-cyan-500 transition-all duration-300">
+            <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl hover:shadow-2xl flex-1 p-8 border border-gray-100/20 group hover:-translate-y-1 transition-all duration-300">
               <div className="text-center">
-                <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users size={24} className="text-cyan-500" />
+                <div className="w-16 h-16 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6 transform -rotate-3 hover:-rotate-6 transition-transform duration-300">
+                  <Users size={32} className="text-cyan-500" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Join Community</h3>
+                <h3 className="text-xl font-bold text-gray-800 group-hover:text-cyan-600 transition-colors duration-200">Join Community</h3>
                 <button
-                  className="btn bg-cyan-500 text-white border-none hover:bg-cyan-600 rounded-full px-6 mb-6"
+                  className="btn bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-none hover:shadow-lg hover:opacity-90 rounded-full px-8 py-3 mb-8 transition-all duration-200 transform hover:scale-105 w-full"
                   onClick={() => navigate('/community')}
                 >
                   Join Now
                 </button>
-                <div className="text-left space-y-3">
-                  <p className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                    Learn from others
+                <div className="text-left space-y-4">
+                  <p className="flex items-center gap-3 text-sm text-gray-600 hover:text-cyan-600 transition-all duration-200 p-2 rounded-lg hover:bg-cyan-50 cursor-pointer group">
+                    <span className="w-3 h-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full group-hover:scale-125 transition-transform duration-200"></span>
+                    <span className="group-hover:translate-x-1 transition-transform duration-200">Learn from others</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                    Share experiences
+                  <p className="flex items-center gap-3 text-sm text-gray-600 hover:text-cyan-600 transition-all duration-200 p-2 rounded-lg hover:bg-cyan-50 cursor-pointer group">
+                    <span className="w-3 h-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full group-hover:scale-125 transition-transform duration-200"></span>
+                    <span className="group-hover:translate-x-1 transition-transform duration-200">Share experiences</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                    Access gamified learning
+                  <p className="flex items-center gap-3 text-sm text-gray-600 hover:text-cyan-600 transition-all duration-200 p-2 rounded-lg hover:bg-cyan-50 cursor-pointer group">
+                    <span className="w-3 h-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full group-hover:scale-125 transition-transform duration-200"></span>
+                    <span className="group-hover:translate-x-1 transition-transform duration-200">Access gamified learning</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                    Earn rewards
+                  <p className="flex items-center gap-3 text-sm text-gray-600 hover:text-cyan-600 transition-all duration-200 p-2 rounded-lg hover:bg-cyan-50 cursor-pointer group">
+                    <span className="w-3 h-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full group-hover:scale-125 transition-transform duration-200"></span>
+                    <span className="group-hover:translate-x-1 transition-transform duration-200">Earn rewards</span>
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-xl shadow-lg flex-1 p-6 border-2 border-gray-200 hover:bg-cyan-50 hover:border-cyan-500 transition-all duration-300">
+            <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl hover:shadow-2xl flex-1 p-8 border border-gray-100/20 group hover:-translate-y-1 transition-all duration-300">
               <div className="text-center">
-                <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <UserCircle size={24} className="text-cyan-500" />
+                <div className="w-16 h-16 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6 transform rotate-3 hover:rotate-6 transition-transform duration-300">
+                  <UserCircle size={32} className="text-cyan-500" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">My Profile</h3>
+                <h3 className="text-xl font-bold text-gray-800 group-hover:text-cyan-600 transition-colors duration-200">My Profile</h3>
                 <button
-                  className="btn bg-cyan-500 text-white border-none hover:bg-cyan-600 rounded-full px-6 mb-6"
+                  className="btn bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-none hover:shadow-lg hover:opacity-90 rounded-full px-8 py-3 mb-8 transition-all duration-200 transform hover:scale-105 w-full"
                   onClick={() => navigate('/personal-details')}
                 >
                   View Profile
                 </button>
-                <div className="text-left space-y-3">
-                  <p className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                    Manage financial data
+                <div className="text-left space-y-4">
+                  <p className="flex items-center gap-3 text-sm text-gray-600 hover:text-cyan-600 transition-all duration-200 p-2 rounded-lg hover:bg-cyan-50 cursor-pointer group">
+                    <span className="w-3 h-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full group-hover:scale-125 transition-transform duration-200"></span>
+                    <span className="group-hover:translate-x-1 transition-transform duration-200">Manage financial data</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                    Track loan applications
+                  <p className="flex items-center gap-3 text-sm text-gray-600 hover:text-cyan-600 transition-all duration-200 p-2 rounded-lg hover:bg-cyan-50 cursor-pointer group">
+                    <span className="w-3 h-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full group-hover:scale-125 transition-transform duration-200"></span>
+                    <span className="group-hover:translate-x-1 transition-transform duration-200">Track loan applications</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                    View visualizations
+                  <p className="flex items-center gap-3 text-sm text-gray-600 hover:text-cyan-600 transition-all duration-200 p-2 rounded-lg hover:bg-cyan-50 cursor-pointer group">
+                    <span className="w-3 h-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full group-hover:scale-125 transition-transform duration-200"></span>
+                    <span className="group-hover:translate-x-1 transition-transform duration-200">View visualizations</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                    Get predictive insights
+                  <p className="flex items-center gap-3 text-sm text-gray-600 hover:text-cyan-600 transition-all duration-200 p-2 rounded-lg hover:bg-cyan-50 cursor-pointer group">
+                    <span className="w-3 h-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full group-hover:scale-125 transition-transform duration-200"></span>
+                    <span className="group-hover:translate-x-1 transition-transform duration-200">Get predictive insights</span>
                   </p>
                 </div>
               </div>

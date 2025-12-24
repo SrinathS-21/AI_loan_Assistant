@@ -13,7 +13,8 @@ import weaviate
 from weaviate.auth import AuthApiKey
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
-from langchain.chains.question_answering import load_qa_chain
+from langchain.schema.runnable import RunnablePassthrough
+from langchain.schema.output_parser import StrOutputParser
 from langchain_community.vectorstores import Weaviate
 from community import community_bp
 from profile import profile_bp
@@ -391,60 +392,82 @@ def generate_embeddings(chunks):
         raise Exception(f"Error generating embedding for chunk: {str(e)}")
 
 # QA Chain Setup
-def get_conversational_chain():
-    prompt_template = """You are a professional and friendly loan advisor for all banks. Assist users with loan-related queries based on their profile and general admin guidelines stored in Weaviate. Provide concise, structured, and user-friendly responses in the same language as the user’s question, limited to 150-200 words.
+def setup_qa_chain():
+    prompt_template = """Use the following pieces of information to answer the question. Make your answer clear, concise and easy to understand for a general audience.
 
-    *Admin Context:* {context}  
-    *User Profile:* {user_profile}  
-    *Current Question:* {question}  
+    Context: {context}
+    User Profile: {user_profile}
+    Question: {question}
 
-    ### *Response Guidelines:*
-    - **Greeting & Acknowledgment**:  
-      Greet the user by name (if available) or generically and acknowledge the query briefly. This should be a standalone paragraph before any section.  
-
-    - **Eligibility Criteria** (if applicable or assumed):  
-      List 2-3 key eligibility points as bullet points using '* - '. Flag profile issues (e.g., future date of birth) under a separate section '- **Profile Issue:**'.  
-
-    - **Loan Details** (if applicable):  
-      List 2-3 key details (e.g., tenure, interest rate) as bullet points using '* - '.  
-
-    - **Required Information** (if needed):  
-      List up to 3 missing details as numbered points (e.g., '1. ', '2. '). Provide a brief explanation for each.  
-
-    - **Next Steps & Support**:  
-      Offer 1-2 actionable steps and include a call to action (e.g., "Would you like help with this?").  
-
-    *Constraints:*  
-    - Always start sections with '- **Section Name:**' (e.g., '- **Eligibility Criteria:**').  
-    - Use '* - ' for bullet points under sections.  
+    Guidelines:
     - Use numbered lists (e.g., '1. ') for required information.  
     - Avoid markdown symbols like '**' within the content (e.g., do not bold individual words in sentences).  
     - Avoid jargon unless explained.  
     - Focus on general bank loan data from the admin context.  
-    - If the query is vague, assume it’s about loan eligibility or application and provide relevant details.
+    - If the query is vague, assume it's about loan eligibility or application and provide relevant details.
 
     *Answer:*  
     (Generate a structured response following the guidelines.)"""
 
-    model = ChatGoogleGenerativeAI(model="gemini-1.5-pro", temperature=0.2, google_api_key=GOOGLE_API_KEY)
-    prompt = PromptTemplate(template=prompt_template, input_variables=["context", "user_profile", "question"])
-    chain = load_qa_chain(model, chain_type="stuff", prompt=prompt)
-    return chain
+    try:
+        # Initialize the model
+        model = ChatGoogleGenerativeAI(
+            model="models/gemini-2.0-flash",  # Using full model path
+            temperature=0.2,
+            google_api_key=GOOGLE_API_KEY,
+            convert_system_message_to_human=False  # Disable deprecated feature
+        )
+        
+        # Create the prompt template
+        prompt = PromptTemplate(template=prompt_template, input_variables=["context", "user_profile", "question"])
+        
+        def format_docs(docs):
+            return "\n\n".join(doc.page_content for doc in docs)
+        
+        # Create the chain using LCEL
+        chain = (
+            {
+                "context": lambda x: format_docs(x["input_documents"]),
+                "question": lambda x: x["question"],
+                "user_profile": lambda x: x["user_profile"]
+            }
+            | prompt 
+            | model 
+            | StrOutputParser()
+        )
+        
+        return chain
+    except Exception as e:
+        print(f"Error setting up QA chain: {str(e)}")
+        raise
 
 # General conversational response
 def get_general_response(user_message, user_profile):
-    model = ChatGoogleGenerativeAI(model="gemini-1.5-pro", temperature=0.2, google_api_key=GOOGLE_API_KEY)
-    if "hi" in user_message.lower() or "hello" in user_message.lower():
-        return "Hi there! Welcome to your loan assistant. How can I help you with your loan needs today?"
-    elif "name" in user_message.lower() and "?" in user_message:
-        try:
-            name_part = user_profile.split("name:")[1].split(",")[0].strip()
-            return f"Nice to meet you! Your name is {name_part}, according to your profile."
-        except IndexError:
-            return "I don’t have your name yet. Please update your profile so I can assist you better!"
-    else:
-        response = model.invoke(f"Respond conversationally to: '{user_message}' as a loan assistant")
-        return response.content
+    try:
+        model = ChatGoogleGenerativeAI(
+            model="models/gemini-2.0-flash",  # Using full model path
+            temperature=0.2,
+            google_api_key=GOOGLE_API_KEY,
+            convert_system_message_to_human=False  # Disable deprecated feature
+        )
+        if "hi" in user_message.lower() or "hello" in user_message.lower():
+            return "Hi there! Welcome to your loan assistant. How can I help you with your loan needs today?"
+        elif "name" in user_message.lower() and "?" in user_message:
+            try:
+                name_part = user_profile.split("name:")[1].split(",")[0].strip()
+                return f"Nice to meet you! Your name is {name_part}, according to your profile."
+            except IndexError:
+                return "I don't have your name yet. Please update your profile so I can assist you better!"
+        else:
+            try:
+                response = model.invoke(f"Respond conversationally to: '{user_message}' as a loan assistant")
+                return response.content
+            except Exception as e:
+                print(f"Error in Gemini API call: {str(e)}")
+                return "I apologize, but I'm having trouble processing your request right now. Could you please try again?"
+    except Exception as e:
+        print(f"Error in get_general_response: {str(e)}")
+        return "I apologize, but I'm experiencing technical difficulties. Please try again later."
 
 # Function to convert structured text to HTML string
 def format_response_to_html(text):
@@ -766,7 +789,7 @@ def chat():
         admin_docs = admin_vector_store.similarity_search(user_message_english, k=10)
         print(f"Retrieved admin documents: {admin_docs}")
 
-        chain = get_conversational_chain()
+        chain = setup_qa_chain()
 
         is_eligibility = any(keyword in user_message_english.lower() for keyword in eligibility_keywords)
         is_apply = any(keyword in user_message_english.lower() for keyword in apply_keywords)
@@ -775,53 +798,49 @@ def chat():
 
         print(f"Keyword checks - Eligibility: {is_eligibility}, Apply: {is_apply}, Interest: {is_interest}, Help: {is_help}")
 
-        if any(keyword in user_message_english.lower() for keyword in ["hi", "hello", "hey"]):
-            response = get_general_response(user_message_english, user_profile)
-        elif "name" in user_message_english.lower() and "?" in user_message_english:
-            response = get_general_response(user_message_english, user_profile)
-        elif is_eligibility:
-            print(f"Matched eligibility query: {user_message_english}")
-            response = chain.invoke({
-                "input_documents": admin_docs,
-                "user_profile": user_profile,
-                "question": f"Hi {user_name}! {user_message_english} Provide eligibility criteria for a car loan based on the admin guidelines. If income, debt, or other details are needed, guide me to provide them."
-            })['output_text']
-        elif is_apply:
-            response = chain.invoke({
-                "input_documents": admin_docs,
-                "user_profile": user_profile,
-                "question": f"Hi {user_name}! {user_message_english} Provide steps to apply for a car loan based on the admin guidelines."
-            })['output_text']
-        elif is_interest:
-            response = chain.invoke({
-                "input_documents": admin_docs,
-                "user_profile": user_profile,
-                "question": f"Hi {user_name}! {user_message_english} Provide interest rates for car loans based on the admin guidelines."
-            })['output_text']
-        elif is_help:
-            response = chain.invoke({
-                "input_documents": admin_docs,
-                "user_profile": user_profile,
-                "question": f"Hi {user_name}! I’m here to guide you! {user_message_english} How can I assist with your loan process today?"
-            })['output_text']
-        else:
-            print(f"No specific match, assuming eligibility for loan query: {user_message_english}")
-            response = chain.invoke({
-                "input_documents": admin_docs,
-                "user_profile": user_profile,
-                "question": f"Hi {user_name}! {user_message_english} Provide eligibility criteria or general information for a car loan based on the admin guidelines."
-            })['output_text']
+        try:
+            if any(keyword in user_message_english.lower() for keyword in ["hi", "hello", "hey"]):
+                response = get_general_response(user_message_english, user_profile)
+            elif "name" in user_message_english.lower() and "?" in user_message_english:
+                response = get_general_response(user_message_english, user_profile)
+            elif is_eligibility:
+                print(f"Matched eligibility query: {user_message_english}")
+                chain_input = {
+                    "input_documents": admin_docs,
+                    "user_profile": user_profile,
+                    "question": f"Hi {user_name}! {user_message_english} Provide eligibility criteria for a loan based on the admin guidelines. If income, debt, or other details are needed, guide me to provide them."
+                }
+                response = chain.invoke(chain_input)
+            elif is_apply:
+                chain_input = {
+                    "input_documents": admin_docs,
+                    "user_profile": user_profile,
+                    "question": f"Hi {user_name}! {user_message_english} Provide steps to apply for a loan based on the admin guidelines."
+                }
+                response = chain.invoke(chain_input)
+            elif is_interest:
+                chain_input = {
+                    "input_documents": admin_docs,
+                    "user_profile": user_profile,
+                    "question": f"Hi {user_name}! {user_message_english} Provide interest rates for loans based on the admin guidelines."
+                }
+                response = chain.invoke(chain_input)
+            else:
+                response = get_general_response(user_message_english, user_profile)
 
-        if original_language != "en":
-            response = translate_to_user_language(response, original_language)
+            if original_language != "en":
+                response = translate_to_user_language(response, original_language)
 
-        formatted_response = format_response_to_html(response)
-        print(f"Raw response: {response}")
-        print(f"Formatted response: {formatted_response}")
-        return jsonify({'response': formatted_response})
+            html_response = format_response_to_html(response)
+            return jsonify({'response': html_response})
+
+        except Exception as e:
+            print(f"Error processing chat request: {str(e)}")
+            return jsonify({'error': 'An error occurred while processing your request'}), 500
+
     except Exception as e:
         print(f"Error processing chat request: {str(e)}")
-        return jsonify({'error': f"Oops! Something went wrong. Please try again later. Error: {str(e)}"}), 500
+        return jsonify({'error': 'An error occurred while processing your request'}), 500
 
 # Voice Chat Route for Voice-Based Conversation
 @app.route('/api/voice-chat', methods=['POST'])
@@ -898,7 +917,7 @@ def voice_chat():
             admin_docs = admin_vector_store.similarity_search(user_message_english, k=10)
             print(f"Retrieved admin documents: {admin_docs}")
 
-            chain = get_conversational_chain()
+            chain = setup_qa_chain()
 
             is_eligibility = any(keyword in user_message_english.lower() for keyword in eligibility_keywords)
             is_apply = any(keyword in user_message_english.lower() for keyword in apply_keywords)
@@ -913,36 +932,28 @@ def voice_chat():
                 response = get_general_response(user_message_english, user_profile)
             elif is_eligibility:
                 print(f"Matched eligibility query: {user_message_english}")
-                response = chain.invoke({
+                chain_input = {
                     "input_documents": admin_docs,
                     "user_profile": user_profile,
-                    "question": f"Hi {user_name}! {user_message_english} Provide eligibility criteria for a car loan based on the admin guidelines. If income, debt, or other details are needed, guide me to provide them."
-                })['output_text']
+                    "question": f"Hi {user_name}! {user_message_english} Provide eligibility criteria for a loan based on the admin guidelines. If income, debt, or other details are needed, guide me to provide them."
+                }
+                response = chain.invoke(chain_input)
             elif is_apply:
-                response = chain.invoke({
+                chain_input = {
                     "input_documents": admin_docs,
                     "user_profile": user_profile,
-                    "question": f"Hi {user_name}! {user_message_english} Provide steps to apply for a car loan based on the admin guidelines."
-                })['output_text']
+                    "question": f"Hi {user_name}! {user_message_english} Provide steps to apply for a loan based on the admin guidelines."
+                }
+                response = chain.invoke(chain_input)
             elif is_interest:
-                response = chain.invoke({
+                chain_input = {
                     "input_documents": admin_docs,
                     "user_profile": user_profile,
-                    "question": f"Hi {user_name}! {user_message_english} Provide interest rates for car loans based on the admin guidelines."
-                })['output_text']
-            elif is_help:
-                response = chain.invoke({
-                    "input_documents": admin_docs,
-                    "user_profile": user_profile,
-                    "question": f"Hi {user_name}! I’m here to guide you! {user_message_english} How can I assist with your loan process today?"
-                })['output_text']
+                    "question": f"Hi {user_name}! {user_message_english} Provide interest rates for loans based on the admin guidelines."
+                }
+                response = chain.invoke(chain_input)
             else:
-                print(f"No specific match, assuming eligibility for loan query: {user_message_english}")
-                response = chain.invoke({
-                    "input_documents": admin_docs,
-                    "user_profile": user_profile,
-                    "question": f"Hi {user_name}! {user_message_english} Provide eligibility criteria or general information for a car loan based on the admin guidelines."
-                })['output_text']
+                response = get_general_response(user_message_english, user_profile)
 
             # Step 5: Translate the response back to the user's language
             if original_language != "en":
